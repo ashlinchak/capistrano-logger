@@ -2,21 +2,19 @@ namespace :logger do
   desc 'Show logs'
   task :show do
     on roles(:app) do
-      default_file = "#{release_path}/log/#{fetch(:rails_env)}.log"
+      default_file = fetch(:logger_default_file) || "#{release_path}/log/#{fetch(:rails_env)}.log"
       lines = ENV['LINES'] || fetch(:logger_lines) || 100
-      file = default_file
 
-      if ENV['FILE']
-        if fetch(:logger_files).is_a?(Hash)
-          fetched_file = fetch(:logger_files)[ENV['FILE'].to_sym]
-          file = fetched_file if fetched_file
+      if ENV['ALIASE']
+        if fetch(:logger_file_aliases).is_a?(Hash) && fetched_file = fetch(:logger_file_aliases)[ENV['ALIASE'].to_sym]
+          file = fetched_file
+        else
+          raise Capistrano::Logger::Error, 'Aliase for log file is not set.'
         end
+      elsif ENV['FILE']
+        file = ENV['FILE']
       else
-        if fetch(:logger_files).is_a?(Hash)
-          file = fetch(:logger_files).values[0]
-        elsif fetch(:logger_files).is_a?(String)
-          file = fetch(:logger_files)
-        end
+        file = default_file
       end
 
       SSHKit.config.use_format SSHKit::Formatter::LogFormat
