@@ -1,4 +1,4 @@
-require 'sshkit/formatters/pretty'
+require 'sshkit'
 
 module SSHKit
   module Formatter
